@@ -8,7 +8,7 @@ import Header from "./Component/Header";
 function App() {
   const [click, setClick] = useState(false);
   return (
-    <>
+    <div>
       <Header />
       <div className="main-body-wrapper">
         <SidePopup />
@@ -17,7 +17,7 @@ function App() {
           <DataGrid />
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

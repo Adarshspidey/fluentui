@@ -198,6 +198,10 @@ const DataGrid = () => {
         columns={columns}
         data={tableData}
         editingMode="modal" //default
+        enableGlobalFilter={false}
+        enableColumnFilters={false}
+        enableDensityToggle={false}
+        enableHiding={false}
         enableColumnOrdering
         enableRowSelection
         enableMultiRowSelection

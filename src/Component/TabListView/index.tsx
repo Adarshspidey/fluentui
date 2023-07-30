@@ -22,7 +22,7 @@ const TabListView = () => {
 
   return (
     <div className={styles.root}>
-      <TabList defaultSelectedValue="tab2">
+      <TabList defaultSelectedValue="tab1">
         <Tab value="tab1">Action List</Tab>
         <Tab value="tab2">Clients</Tab>
         <Tab value="tab3">Reports</Tab>
