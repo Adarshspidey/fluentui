@@ -24,6 +24,19 @@ import { Delete, Edit } from "@mui/icons-material";
 import { ExportToCsv } from "export-to-csv";
 import { fakeData, usStates } from "./makeData";
 
+import { Icon } from "@fluentui/react";
+import { ChevronDownIcon, ViewIcon } from "@fluentui/react-icons-mdl2";
+
+import {
+  DrawerBody,
+  DrawerHeader,
+  DrawerHeaderTitle,
+  DrawerOverlay,
+  DrawerProps,
+} from "@fluentui/react-components/unstable";
+import { Button as MuButton,makeStyles, tokens } from "@fluentui/react-components";
+import { Dismiss24Regular } from "@fluentui/react-icons";
+
 export type Person = {
   id: string;
   firstName: string;
@@ -33,12 +46,30 @@ export type Person = {
   state: string;
 };
 
+const useStyles = makeStyles({
+  content: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    columnGap: tokens.spacingHorizontalXS,
+  },
+});
+
 const DataGrid = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [tableData, setTableData] = useState<Person[]>(fakeData);
   const [validationErrors, setValidationErrors] = useState<{
     [cellId: string]: string;
   }>({});
+  const [isOpen, setIsOpen] = useState(false);
+  const [position, setPosition] = useState<DrawerProps["position"]>("left");
+  const [rowData,setRowData]=useState<Person>()
+
+  const onClickRightButton = React.useCallback(() => {
+    setPosition("right");
+    setIsOpen(true);
+    // setRowData(row);
+  }, []);
 
   const handleCreateNewRow = (values: Person) => {
     tableData.push(values);
@@ -59,19 +90,19 @@ const DataGrid = () => {
     setValidationErrors({});
   };
 
-  const handleDeleteRow = useCallback(
-    (row: MRT_Row<Person>) => {
-      if (
-        !confirm(`Are you sure you want to delete ${row.getValue("firstName")}`)
-      ) {
-        return;
-      }
-      //send api delete request here, then refetch or update local table data for re-render
-      tableData.splice(row.index, 1);
-      setTableData([...tableData]);
-    },
-    [tableData]
-  );
+  // const handleDeleteRow = useCallback(
+  //   (row: MRT_Row<Person>) => {
+  //     if (
+  //     //  !confirm(`Are you sure you want to delete ${row.getValue("firstName")}`)
+  //     ) {
+  //       return;
+  //     }
+  //     //send api delete request here, then refetch or update local table data for re-render
+  //     tableData.splice(row.index, 1);
+  //     setTableData([...tableData]);
+  //   },
+  //   [tableData]
+  // );
 
   const getCommonEditTextFieldProps = useCallback(
     (
@@ -175,17 +206,42 @@ const DataGrid = () => {
     headers: columns.map((c) => c.header),
   };
 
-  const csvExporter = new ExportToCsv(csvOptions);
-  const handleExportRows = (rows: MRT_Row<usStates>[]) => {
-    csvExporter.generateCsv(rows.map((row) => row.original));
-  };
+  // const csvExporter = new ExportToCsv(csvOptions);
+  // const handleExportRows = (rows: MRT_Row<usStates>[]) => {
+  //   csvExporter.generateCsv(rows.map((row) => row.original));
+  // };
 
-  const handleExportData = () => {
-    csvExporter.generateCsv(fakeData);
-  };
+  // const handleExportData = () => {
+  //   csvExporter.generateCsv(fakeData);
+  // };
 
   return (
     <>
+    <DrawerOverlay
+        position={position}
+        open={isOpen}
+        onOpenChange={(_, { open }) => setIsOpen(open)}
+      >
+        <DrawerHeader>
+        <DrawerHeaderTitle
+            action={
+              <MuButton
+                appearance="subtle"
+                aria-label="Close"
+                icon={<Dismiss24Regular />}
+                onClick={() => setIsOpen(false)}
+              />
+            }
+          >
+            {position === "left" ? "Left" : "Right"} Drawer
+          </DrawerHeaderTitle>
+        </DrawerHeader>
+
+        <DrawerBody>
+          <p>Drawer content</p>
+        </DrawerBody>
+      </DrawerOverlay>
+      
       <MaterialReactTable
         displayColumnDefOptions={{
           "mrt-row-actions": {
@@ -212,41 +268,49 @@ const DataGrid = () => {
         renderRowActions={({ row, table }) => (
           <Box sx={{ display: "flex", gap: "1rem" }}>
             <Tooltip arrow placement="left" title="Edit">
-              <IconButton onClick={() => table.setEditingRow(row)}>
+              <IconButton
+                color="primary"
+                onClick={() => table.setEditingRow(row)}
+              >
                 <Edit />
               </IconButton>
             </Tooltip>
-            <Tooltip arrow placement="right" title="Delete">
+            {/* <Tooltip arrow placement="right" title="Delete">
               <IconButton color="error" onClick={() => handleDeleteRow(row)}>
                 <Delete />
+              </IconButton>
+            </Tooltip> */}
+            <Tooltip arrow placement="right" title="View">
+              <IconButton color="primary" onClick={() => onClickRightButton}>
+                <ViewIcon />
               </IconButton>
             </Tooltip>
           </Box>
         )}
-        renderTopToolbarCustomActions={({ table }) => (
-          <Box
-            sx={{ display: "flex", gap: "1rem", p: "0.5rem", flexWrap: "wrap" }}
-          >
-            <Button
-              color="secondary"
-              onClick={() => setCreateModalOpen(true)}
-              variant="contained"
-            >
-              Create New Account
-            </Button>
-            <Button
-              disabled={
-                !table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
-              }
-              //only export selected rows
-              onClick={() => handleExportRows(table.getSelectedRowModel().rows)}
-              startIcon={<FileDownloadIcon />}
-              variant="contained"
-            >
-              Export Selected Rows
-            </Button>
-          </Box>
-        )}
+        // renderTopToolbarCustomActions={({ table }) => (
+        //   <Box
+        //     sx={{ display: "flex", gap: "1rem", p: "0.5rem", flexWrap: "wrap" }}
+        //   >
+        //     <Button
+        //       color="secondary"
+        //       onClick={() => setCreateModalOpen(true)}
+        //       variant="contained"
+        //     >
+        //       Create New Account
+        //     </Button>
+        //     <Button
+        //       disabled={
+        //        // !table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
+        //       }
+        //       //only export selected rows
+        //       onClick={() => handleExportRows(table.getSelectedRowModel().rows)}
+        //       startIcon={<FileDownloadIcon />}
+        //       variant="contained"
+        //     >
+        //       Export Selected Rows
+        //     </Button>
+        //   </Box>
+        // )}
       />
       <CreateNewAccountModal
         columns={columns}
